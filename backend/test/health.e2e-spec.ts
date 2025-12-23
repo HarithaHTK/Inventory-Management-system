@@ -20,10 +20,12 @@ describe('Health (e2e)', () => {
     await app.close();
   });
 
-  it('/health (GET)', async () => {
+  it('/health (GET) - returns health status with database info', async () => {
     const res = await request(app.getHttpServer()).get('/health').expect(200);
     expect(res.body.status).toBe('ok');
     expect(typeof res.body.uptime).toBe('number');
     expect(typeof res.body.timestamp).toBe('string');
+    expect(res.body.database).toBeDefined();
+    expect(typeof res.body.database.connected).toBe('boolean');
   });
 });
