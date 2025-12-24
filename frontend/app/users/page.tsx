@@ -121,6 +121,7 @@ export default function UsersPage() {
           <div className={styles.navLinks}>
             <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
             <Link href="/inventory" className={styles.navLink}>Inventory</Link>
+            <Link href="/merchants" className={styles.navLink}>Merchants</Link>
             <Link href="/users" className={styles.navLink}>Users</Link>
           </div>
         </div>
