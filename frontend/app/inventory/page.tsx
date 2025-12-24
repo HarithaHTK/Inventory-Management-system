@@ -128,6 +128,9 @@ export default function InventoryPage() {
             <Link href="/merchants" className={styles.navLink}>
               Merchants
             </Link>
+            <Link href="/reports" className={styles.navLink}>
+              Reports
+            </Link>
             <Link href="/users" className={styles.navLink}>
               Users
             </Link>
