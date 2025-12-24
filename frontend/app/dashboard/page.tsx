@@ -43,6 +43,7 @@ export default function DashboardPage() {
           <h1 className={styles.appName}>Inventory Management</h1>
           <div className={styles.navLinks}>
             <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
+            <Link href="/inventory" className={styles.navLink}>Inventory</Link>
             <Link href="/users" className={styles.navLink}>Users</Link>
           </div>
         </div>
@@ -59,6 +60,7 @@ export default function DashboardPage() {
           <div className={styles.quickLinks}>
             <h3>Quick Links</h3>
             <ul>
+              <li><Link href="/inventory">Manage Inventory</Link></li>
               <li><Link href="/users">Manage Users</Link></li>
               <li><Link href="/health">System Health</Link></li>
             </ul>
