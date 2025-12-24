@@ -2,8 +2,11 @@ import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../users/entities/role.entity';
+import { Merchant } from '../merchants/entities/merchant.entity';
+import { Inventory } from '../inventory/entities/inventory.entity';
 import { seedUsers } from './seeds/user.seed';
 import { seedRoles } from './seeds/role.seed';
+import { seedMerchants } from './seeds/merchant.seed';
 
 const AppDataSource = new DataSource({
   type: 'mysql',
@@ -12,7 +15,7 @@ const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User, Role],
+  entities: [User, Role, Merchant, Inventory],
   synchronize: true,
 });
 
@@ -43,11 +46,16 @@ async function runSeeder() {
     console.log('Running role seed...');
     await seedRoles(AppDataSource);
 
-    console.log('Backfilling existing users to admin role (null roleAlias only)...');
+    console.log(
+      'Backfilling existing users to admin role (null roleAlias only)...',
+    );
     await backfillUsersToAdminRole(AppDataSource);
 
     console.log('Running user seed...');
     await seedUsers(AppDataSource);
+
+    console.log('Running merchant seed...');
+    await seedMerchants(AppDataSource);
 
     console.log('All seeds completed successfully');
   } catch (error) {
