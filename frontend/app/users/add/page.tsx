@@ -139,6 +139,7 @@ export default function AddUserPage() {
           <h1 className={styles.appName}>Inventory Management</h1>
           <div className={styles.navLinks}>
             <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
+            <Link href="/inventory" className={styles.navLink}>Inventory</Link>
             <Link href="/users" className={styles.navLink}>Users</Link>
           </div>
         </div>
