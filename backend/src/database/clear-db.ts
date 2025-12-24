@@ -4,6 +4,7 @@ import { Role } from '../users/entities/role.entity';
 import { User } from '../users/entities/user.entity';
 import { Merchant } from '../merchants/entities/merchant.entity';
 import { Inventory } from '../inventory/entities/inventory.entity';
+import { Report } from '../reports/entities/report.entity';
 
 const AppDataSource = new DataSource({
   type: 'mysql',
@@ -12,7 +13,7 @@ const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_DATABASE || 'inventory_db',
-  entities: [Role, User, Merchant, Inventory],
+  entities: [Role, User, Merchant, Inventory, Report],
   synchronize: false,
 });
 
@@ -27,6 +28,12 @@ async function clearDatabase() {
       console.log('Dropping all tables...');
 
       // Drop tables in correct order (foreign key dependencies)
+      await queryRunner.query('DROP TABLE IF EXISTS `report_inventory`');
+      console.log('✓ Dropped report_inventory table');
+
+      await queryRunner.query('DROP TABLE IF EXISTS `reports`');
+      console.log('✓ Dropped reports table');
+
       await queryRunner.query('DROP TABLE IF EXISTS `inventory`');
       console.log('✓ Dropped inventory table');
 

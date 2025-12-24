@@ -4,28 +4,29 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getToken, isAuthenticated, removeToken } from "@/lib/auth";
-import styles from "./merchants.module.css";
+import styles from "./reports.module.css";
 
-interface Merchant {
+interface InventoryItem {
   id: number;
   name: string;
-  email: string;
-  phone: string;
-  address: string;
-  city?: string;
-  country?: string;
-  zipCode?: string;
-  businessLicense?: string;
-  isActive: boolean;
+  quantity: number;
+  price: number;
+}
+
+interface Report {
+  id: number;
+  title: string;
+  description?: string;
+  inventoryItems: InventoryItem[];
   createdAt: string;
   updatedAt: string;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
 
-export default function MerchantsPage() {
+export default function ReportsPage() {
   const router = useRouter();
-  const [merchants, setMerchants] = useState<Merchant[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -35,15 +36,15 @@ export default function MerchantsPage() {
       return;
     }
 
-    fetchMerchants();
+    fetchReports();
   }, [router]);
 
-  const fetchMerchants = async () => {
+  const fetchReports = async () => {
     try {
       setLoading(true);
       setError("");
       const token = getToken();
-      const response = await fetch(`${API_BASE}/merchants`, {
+      const response = await fetch(`${API_BASE}/reports`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -53,7 +54,7 @@ export default function MerchantsPage() {
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to fetch merchants");
+          throw new Error(errorData.message || "Failed to fetch reports");
         }
         throw new Error(
           "Backend server is not responding. Please make sure the server is running."
@@ -61,28 +62,28 @@ export default function MerchantsPage() {
       }
 
       const result = await response.json();
-      setMerchants(result.data || []);
+      setReports(result || []);
     } catch (err) {
       if (err instanceof TypeError && err.message.includes("fetch")) {
         setError(
           "Cannot connect to backend server. Please make sure it is running on http://localhost:4000"
         );
       } else {
-        setError(err instanceof Error ? err.message : "Failed to fetch merchants");
+        setError(err instanceof Error ? err.message : "Failed to fetch reports");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (merchantId: number, name: string) => {
-    if (!confirm(`Delete "${name}" from merchants?`)) {
+  const handleDelete = async (reportId: number, title: string) => {
+    if (!confirm(`Delete report "${title}"?`)) {
       return;
     }
 
     try {
       const token = getToken();
-      const response = await fetch(`${API_BASE}/merchants/${merchantId}`, {
+      const response = await fetch(`${API_BASE}/reports/${reportId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -93,19 +94,24 @@ export default function MerchantsPage() {
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to delete merchant");
+          throw new Error(errorData.message || "Failed to delete report");
         }
         throw new Error("Backend server is not responding");
       }
 
-      fetchMerchants();
+      fetchReports();
     } catch (err) {
       if (err instanceof TypeError && err.message.includes("fetch")) {
         alert("Cannot connect to backend server. Please make sure it is running.");
       } else {
-        alert(err instanceof Error ? err.message : "Failed to delete merchant");
+        alert(err instanceof Error ? err.message : "Failed to delete report");
       }
     }
+  };
+
+  const handleSendToMerchants = (reportId: number, title: string) => {
+    // Dummy function for now
+    alert(`Send to Merchants feature for "${title}" - Coming Soon!`);
   };
 
   if (loading) {
@@ -153,11 +159,11 @@ export default function MerchantsPage() {
       <main className={styles.main}>
         <div className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>Management</p>
-            <h2>Merchants</h2>
+            <p className={styles.eyebrow}>Analytics</p>
+            <h2>Reports</h2>
           </div>
-          <Link href="/merchants/add" className={styles.addButton}>
-            + Add Merchant
+          <Link href="/reports/add" className={styles.addButton}>
+            + Create Report
           </Link>
         </div>
 
@@ -168,73 +174,60 @@ export default function MerchantsPage() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>City</th>
-                <th>Country</th>
-                <th>Status</th>
-                <th>Updated</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Items</th>
+                <th>Created</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {merchants.length === 0 ? (
+              {reports.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className={styles.noData}>
-                    No merchants yet
+                  <td colSpan={6} className={styles.noData}>
+                    No reports yet. Create your first report!
                   </td>
                 </tr>
               ) : (
-                merchants.map((merchant, index) => (
-                  <tr key={merchant.id}>
+                reports.map((report, index) => (
+                  <tr key={report.id}>
                     <td>{index + 1}</td>
                     <td>
-                      <div className={styles.merchantCell}>
-                        <span className={styles.merchantName}>{merchant.name}</span>
-                        {merchant.address && (
-                          <span className={styles.merchantAddress}>
-                            {merchant.address}
-                          </span>
-                        )}
+                      <div className={styles.reportCell}>
+                        <span className={styles.reportTitle}>{report.title}</span>
                       </div>
                     </td>
                     <td>
-                      <a href={`mailto:${merchant.email}`} className={styles.emailLink}>
-                        {merchant.email}
-                      </a>
+                      {report.description ? (
+                        <span className={styles.description}>{report.description}</span>
+                      ) : (
+                        <span className={styles.noDescription}>-</span>
+                      )}
                     </td>
                     <td>
-                      <a href={`tel:${merchant.phone}`} className={styles.phoneLink}>
-                        {merchant.phone}
-                      </a>
-                    </td>
-                    <td>{merchant.city || "-"}</td>
-                    <td>{merchant.country || "-"}</td>
-                    <td>
-                      <span
-                        className={
-                          merchant.isActive
-                            ? styles.statusActive
-                            : styles.statusInactive
-                        }
-                      >
-                        {merchant.isActive ? "Active" : "Inactive"}
+                      <span className={styles.itemCount}>
+                        {report.inventoryItems?.length || 0} items
                       </span>
                     </td>
                     <td>
-                      {new Date(merchant.updatedAt || merchant.createdAt).toLocaleDateString()}
+                      {new Date(report.createdAt).toLocaleDateString()}
                     </td>
                     <td>
                       <div className={styles.actions}>
                         <Link
-                          href={`/merchants/edit/${merchant.id}`}
-                          className={styles.editBtn}
+                          href={`/reports/view/${report.id}`}
+                          className={styles.viewBtn}
                         >
-                          Edit
+                          View
                         </Link>
                         <button
-                          onClick={() => handleDelete(merchant.id, merchant.name)}
+                          onClick={() => handleSendToMerchants(report.id, report.title)}
+                          className={styles.sendBtn}
+                        >
+                          Send
+                        </button>
+                        <button
+                          onClick={() => handleDelete(report.id, report.title)}
                           className={styles.deleteBtn}
                         >
                           Delete

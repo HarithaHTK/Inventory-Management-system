@@ -45,6 +45,7 @@ export default function DashboardPage() {
             <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
             <Link href="/inventory" className={styles.navLink}>Inventory</Link>
             <Link href="/merchants" className={styles.navLink}>Merchants</Link>
+            <Link href="/reports" className={styles.navLink}>Reports</Link>
             <Link href="/users" className={styles.navLink}>Users</Link>
           </div>
         </div>
