@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { User } from '../users/entities/user.entity';
+import { Role } from '../users/entities/role.entity';
 import { seedUsers } from './seeds/user.seed';
+import { seedRoles } from './seeds/role.seed';
 
 const AppDataSource = new DataSource({
   type: 'mysql',
@@ -10,15 +12,39 @@ const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User],
+  entities: [User, Role],
   synchronize: true,
 });
+
+async function backfillUsersToAdminRole(dataSource: DataSource) {
+  const roleRepository = dataSource.getRepository(Role);
+  const adminRole = await roleRepository.findOne({ where: { alias: 'admin' } });
+
+  if (!adminRole) {
+    console.warn('Admin role not found; skipping backfill.');
+    return;
+  }
+
+  const result: any = await dataSource.query(
+    'UPDATE users SET roleAlias = ? WHERE roleAlias IS NULL',
+    [adminRole.alias],
+  );
+
+  const affected = result?.affectedRows ?? result?.changedRows ?? 0;
+  console.log(`Backfilled ${affected} existing users to admin role.`);
+}
 
 async function runSeeder() {
   try {
     console.log('Initializing database connection...');
     await AppDataSource.initialize();
     console.log('Database connected successfully');
+
+    console.log('Running role seed...');
+    await seedRoles(AppDataSource);
+
+    console.log('Backfilling existing users to admin role (null roleAlias only)...');
+    await backfillUsersToAdminRole(AppDataSource);
 
     console.log('Running user seed...');
     await seedUsers(AppDataSource);

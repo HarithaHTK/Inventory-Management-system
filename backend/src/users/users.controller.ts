@@ -31,9 +31,13 @@ export class UsersController {
   @Get()
   async getAllUsers() {
     const users = await this.usersService.findAll();
+    const data = users.map((user) => ({
+      ...user,
+      roleAlias: user.role?.alias ?? null,
+    }));
     return {
       message: 'Users retrieved successfully',
-      data: users,
+      data,
     };
   }
 
@@ -50,7 +54,10 @@ export class UsersController {
     const { password, ...userWithoutPassword } = user;
     return {
       message: 'User retrieved successfully',
-      data: userWithoutPassword,
+      data: {
+        ...userWithoutPassword,
+        roleAlias: user.role?.alias ?? null,
+      },
     };
   }
 
@@ -63,7 +70,10 @@ export class UsersController {
     const { password, ...userWithoutPassword } = user;
     return {
       message: 'User updated successfully',
-      data: userWithoutPassword,
+      data: {
+        ...userWithoutPassword,
+        roleAlias: user.role?.alias ?? null,
+      },
     };
   }
 

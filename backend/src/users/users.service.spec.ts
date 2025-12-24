@@ -3,15 +3,22 @@ import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { Role } from './entities/role.entity';
+import * as bcrypt from 'bcrypt';
 
 describe('UsersService', () => {
   let service: UsersService;
   let repository: Repository<User>;
+  let roleRepository: Repository<Role>;
 
   const mockRepository = {
     findOne: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
+  };
+
+  const mockRoleRepository = {
+    findOne: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -22,11 +29,18 @@ describe('UsersService', () => {
           provide: getRepositoryToken(User),
           useValue: mockRepository,
         },
+        {
+          provide: getRepositoryToken(Role),
+          useValue: mockRoleRepository,
+        },
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
     repository = module.get<Repository<User>>(getRepositoryToken(User));
+    roleRepository = module.get<Repository<Role>>(getRepositoryToken(Role));
+
+    mockRoleRepository.findOne.mockResolvedValue({ alias: 'viewer' });
   });
 
   afterEach(() => {
@@ -46,6 +60,7 @@ describe('UsersService', () => {
       expect(result).toEqual(user);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { username: 'test' },
+        relations: { role: true },
       });
     });
 
@@ -65,7 +80,7 @@ describe('UsersService', () => {
         password: 'password123',
       };
 
-      const createdUser = { ...userData, id: 1 };
+      const createdUser = { ...userData, id: 1, role: { alias: 'viewer' } };
       mockRepository.create.mockReturnValue(createdUser);
       mockRepository.save.mockResolvedValue(createdUser);
 
@@ -75,6 +90,7 @@ describe('UsersService', () => {
         userData.password,
       );
 
+      expect(roleRepository.findOne).toHaveBeenCalledWith({ where: { alias: 'viewer' } });
       expect(mockRepository.create).toHaveBeenCalled();
       expect(mockRepository.save).toHaveBeenCalled();
       expect(result).toHaveProperty('id');
@@ -83,11 +99,9 @@ describe('UsersService', () => {
 
   describe('validatePassword', () => {
     it('should return true for matching passwords', async () => {
-      const result = await service.validatePassword(
-        'password123',
-        '$2b$10$dummyHashedPassword',
-      );
-      expect(typeof result).toBe('boolean');
+      const hash = await bcrypt.hash('password123', 1);
+      const result = await service.validatePassword('password123', hash);
+      expect(result).toBe(true);
     });
   });
 });

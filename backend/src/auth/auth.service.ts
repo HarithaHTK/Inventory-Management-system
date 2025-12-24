@@ -7,6 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 export interface JwtPayload {
   sub: number;
   username: string;
+  roleAlias: string | null;
 }
 
 export interface AuthResponse {
@@ -15,6 +16,7 @@ export interface AuthResponse {
     id: number;
     username: string;
     email: string;
+    roleAlias: string | null;
   };
 }
 
@@ -40,10 +42,15 @@ export class AuthService {
     }
 
     // Create new user
-    const user = await this.usersService.create(username, email, password);
+    // External registrations default to viewer role
+    const user = await this.usersService.create(username, email, password, 'viewer');
 
     // Generate JWT token
-    const payload: JwtPayload = { sub: user.id, username: user.username };
+    const payload: JwtPayload = {
+      sub: user.id,
+      username: user.username,
+      roleAlias: user.role?.alias ?? null,
+    };
     const access_token = await this.jwtService.signAsync(payload);
 
     return {
@@ -52,6 +59,7 @@ export class AuthService {
         id: user.id,
         username: user.username,
         email: user.email,
+        roleAlias: user.role?.alias ?? null,
       },
     };
   }
@@ -75,7 +83,11 @@ export class AuthService {
     }
 
     // Generate JWT token
-    const payload: JwtPayload = { sub: user.id, username: user.username };
+    const payload: JwtPayload = {
+      sub: user.id,
+      username: user.username,
+      roleAlias: user.role?.alias ?? null,
+    };
     const access_token = await this.jwtService.signAsync(payload);
 
     return {
@@ -84,6 +96,7 @@ export class AuthService {
         id: user.id,
         username: user.username,
         email: user.email,
+        roleAlias: user.role?.alias ?? null,
       },
     };
   }

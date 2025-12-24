@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { DataSource } from 'typeorm';
+import { Role } from '../src/users/entities/role.entity';
 
 describe('Users (e2e)', () => {
   let app: INestApplication<App>;
@@ -20,6 +21,21 @@ describe('Users (e2e)', () => {
     await app.init();
 
     dataSource = moduleFixture.get<DataSource>(DataSource);
+
+    // Ensure base roles exist
+    const roleRepo = dataSource.getRepository(Role);
+    const roles = [
+      { alias: 'viewer', name: 'Viewer' },
+      { alias: 'manager', name: 'Manager' },
+      { alias: 'admin', name: 'Administrator' },
+    ];
+    for (const role of roles) {
+      const existing = await roleRepo.findOne({ where: { alias: role.alias } });
+      if (!existing) {
+        const created = roleRepo.create(role);
+        await roleRepo.save(created);
+      }
+    }
 
     // Register and login to get auth token
     const registerRes = await request(app.getHttpServer())
@@ -54,6 +70,7 @@ describe('Users (e2e)', () => {
       expect(res.body).toHaveProperty('message');
       expect(res.body).toHaveProperty('data');
       expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data[0]).toHaveProperty('roleAlias');
     });
 
     it('should fail without authentication', async () => {
@@ -70,6 +87,7 @@ describe('Users (e2e)', () => {
 
       expect(res.body.data).toHaveProperty('id', testUserId);
       expect(res.body.data).toHaveProperty('username', 'testadmin');
+      expect(res.body.data).toHaveProperty('roleAlias');
       expect(res.body.data).not.toHaveProperty('password');
     });
   });
@@ -86,6 +104,7 @@ describe('Users (e2e)', () => {
 
       expect(res.body.message).toBe('User updated successfully');
       expect(res.body.data.username).toBe('updateuser');
+      expect(res.body.data.roleAlias).toBe('viewer');
       expect(res.body.data).not.toHaveProperty('password');
     });
 
@@ -200,6 +219,19 @@ describe('Users (e2e)', () => {
 
       expect(res.body).toHaveProperty('message');
       expect(res.body).toHaveProperty('user');
+      expect(res.body.user).toHaveProperty('roleAlias');
+    });
+  });
+
+  describe('/users/:id roleAlias (PATCH)', () => {
+    it('should update user role to manager by alias', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(`/users/${testUserId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ roleAlias: 'manager' })
+        .expect(200);
+
+      expect(res.body.data.roleAlias).toBe('manager');
     });
   });
 });
