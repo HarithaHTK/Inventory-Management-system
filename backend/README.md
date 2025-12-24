@@ -31,6 +31,17 @@
 $ npm install
 ```
 
+## Database Setup
+
+The application automatically seeds the database with three default roles on startup:
+- **viewer** - Read-only access
+- **manager** - Can manage limited resources  
+- **admin** - Full access to administrative features
+
+No manual seeding is required. Just start the application and the roles will be created automatically.
+
+For more details, see [DATABASE_SETUP.md](./DATABASE_SETUP.md)
+
 ## Compile and run the project
 
 ```bash
@@ -42,6 +53,16 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
+```
+
+## Database Scripts
+
+```bash
+# Manually seed the database (not required - happens automatically on startup)
+$ npm run seed
+
+# Clean up extra roles (keep only viewer, manager, admin)
+$ npm run clean-roles
 ```
 
 ## Run tests

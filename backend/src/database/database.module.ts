@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../users/entities/role.entity';
+import { DatabaseSeederService } from './seeder.service';
 
 @Module({
   imports: [
@@ -21,5 +22,7 @@ import { Role } from '../users/entities/role.entity';
       }),
     }),
   ],
+  providers: [DatabaseSeederService],
+  exports: [DatabaseSeederService],
 })
 export class DatabaseModule {}
