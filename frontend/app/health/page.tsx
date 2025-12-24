@@ -5,6 +5,10 @@ type HealthResponse = {
   uptime: number;
   timestamp: string;
   env?: string;
+  database?: {
+    connected: boolean;
+    type?: string;
+  };
 };
 
 async function fetchHealth(): Promise<HealthResponse> {
@@ -12,6 +16,8 @@ async function fetchHealth(): Promise<HealthResponse> {
   const res = await fetch(`${baseUrl}/health`, {
     cache: 'no-store',
   });
+
+  console.log('Health fetch response status:', res.json);
 
   if (!res.ok) {
     throw new Error(`Request failed with status ${res.status}`);
@@ -26,12 +32,20 @@ export default async function HealthPage() {
     return (
       <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
         <h1>Backend Health</h1>
-        <p>Live status from the NestJS backend.</p>
         <ul>
           <li><strong>Status:</strong> {health.status}</li>
           <li><strong>Uptime (s):</strong> {health.uptime.toFixed(2)}</li>
           <li><strong>Timestamp:</strong> {health.timestamp}</li>
           {health.env ? <li><strong>Env:</strong> {health.env}</li> : null}
+          {health.database ? (
+            <li>
+              <strong>Database:</strong>{' '}
+              <span style={{ color: health.database.connected ? 'green' : 'red' }}>
+                {health.database.connected ? '✓ Connected' : '✗ Disconnected'}
+              </span>
+              {health.database.type ? ` (${health.database.type})` : ''}
+            </li>
+          ) : null}
         </ul>
       </main>
     );
