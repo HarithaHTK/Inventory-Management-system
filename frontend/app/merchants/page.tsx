@@ -4,25 +4,28 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getToken, isAuthenticated, removeToken } from "@/lib/auth";
-import styles from "./inventory.module.css";
+import styles from "./merchants.module.css";
 
-interface InventoryItem {
+interface Merchant {
   id: number;
   name: string;
-  description?: string;
-  quantity: number;
-  price: number;
-  sku?: string;
-  category?: string;
+  email: string;
+  phone: string;
+  address: string;
+  city?: string;
+  country?: string;
+  zipCode?: string;
+  businessLicense?: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
 
-export default function InventoryPage() {
+export default function MerchantsPage() {
   const router = useRouter();
-  const [items, setItems] = useState<InventoryItem[]>([]);
+  const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -32,15 +35,15 @@ export default function InventoryPage() {
       return;
     }
 
-    fetchInventory();
+    fetchMerchants();
   }, [router]);
 
-  const fetchInventory = async () => {
+  const fetchMerchants = async () => {
     try {
       setLoading(true);
       setError("");
       const token = getToken();
-      const response = await fetch(`${API_BASE}/inventory`, {
+      const response = await fetch(`${API_BASE}/merchants`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -50,7 +53,7 @@ export default function InventoryPage() {
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to fetch inventory");
+          throw new Error(errorData.message || "Failed to fetch merchants");
         }
         throw new Error(
           "Backend server is not responding. Please make sure the server is running."
@@ -58,28 +61,28 @@ export default function InventoryPage() {
       }
 
       const result = await response.json();
-      setItems(result.data || []);
+      setMerchants(result.data || []);
     } catch (err) {
       if (err instanceof TypeError && err.message.includes("fetch")) {
         setError(
           "Cannot connect to backend server. Please make sure it is running on http://localhost:4000"
         );
       } else {
-        setError(err instanceof Error ? err.message : "Failed to fetch inventory");
+        setError(err instanceof Error ? err.message : "Failed to fetch merchants");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (itemId: number, name: string) => {
-    if (!confirm(`Delete "${name}" from inventory?`)) {
+  const handleDelete = async (merchantId: number, name: string) => {
+    if (!confirm(`Delete "${name}" from merchants?`)) {
       return;
     }
 
     try {
       const token = getToken();
-      const response = await fetch(`${API_BASE}/inventory/${itemId}`, {
+      const response = await fetch(`${API_BASE}/merchants/${merchantId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -90,17 +93,17 @@ export default function InventoryPage() {
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to delete item");
+          throw new Error(errorData.message || "Failed to delete merchant");
         }
         throw new Error("Backend server is not responding");
       }
 
-      fetchInventory();
+      fetchMerchants();
     } catch (err) {
       if (err instanceof TypeError && err.message.includes("fetch")) {
         alert("Cannot connect to backend server. Please make sure it is running.");
       } else {
-        alert(err instanceof Error ? err.message : "Failed to delete item");
+        alert(err instanceof Error ? err.message : "Failed to delete merchant");
       }
     }
   };
@@ -147,11 +150,11 @@ export default function InventoryPage() {
       <main className={styles.main}>
         <div className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>Operations</p>
-            <h2>Inventory</h2>
+            <p className={styles.eyebrow}>Management</p>
+            <h2>Merchants</h2>
           </div>
-          <Link href="/inventory/add" className={styles.addButton}>
-            + Add Item
+          <Link href="/merchants/add" className={styles.addButton}>
+            + Add Merchant
           </Link>
         </div>
 
@@ -163,78 +166,72 @@ export default function InventoryPage() {
               <tr>
                 <th>#</th>
                 <th>Name</th>
-                <th>SKU</th>
-                <th>Category</th>
-                <th>Qty</th>
-                <th>Price</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>City</th>
+                <th>Country</th>
+                <th>Status</th>
                 <th>Updated</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {items.length === 0 ? (
+              {merchants.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className={styles.noData}>
-                    No inventory items yet
+                  <td colSpan={9} className={styles.noData}>
+                    No merchants yet
                   </td>
                 </tr>
               ) : (
-                items.map((item, index) => (
-                  <tr key={item.id}>
+                merchants.map((merchant, index) => (
+                  <tr key={merchant.id}>
                     <td>{index + 1}</td>
                     <td>
-                      <div className={styles.itemCell}>
-                        <span className={styles.itemName}>{item.name}</span>
-                        {item.description && (
-                          <span className={styles.itemDescription}>
-                            {item.description}
+                      <div className={styles.merchantCell}>
+                        <span className={styles.merchantName}>{merchant.name}</span>
+                        {merchant.address && (
+                          <span className={styles.merchantAddress}>
+                            {merchant.address}
                           </span>
                         )}
                       </div>
                     </td>
                     <td>
-                      {item.sku ? (
-                        <span className={styles.skuBadge}>{item.sku}</span>
-                      ) : (
-                        <span className={styles.noSku}>-</span>
-                      )}
+                      <a href={`mailto:${merchant.email}`} className={styles.emailLink}>
+                        {merchant.email}
+                      </a>
                     </td>
                     <td>
-                      {item.category ? (
-                        <span className={styles.categoryBadge}>{item.category}</span>
-                      ) : (
-                        <span className={styles.noSku}>Uncategorized</span>
-                      )}
+                      <a href={`tel:${merchant.phone}`} className={styles.phoneLink}>
+                        {merchant.phone}
+                      </a>
                     </td>
+                    <td>{merchant.city || "-"}</td>
+                    <td>{merchant.country || "-"}</td>
                     <td>
                       <span
                         className={
-                          item.quantity <= 5
-                            ? styles.lowStock
-                            : styles.stock
+                          merchant.isActive
+                            ? styles.statusActive
+                            : styles.statusInactive
                         }
                       >
-                        {item.quantity}
+                        {merchant.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td>
-                      {typeof item.price === "number"
-                        ? `$${item.price.toFixed(2)}`
-                        : "-"}
-                    </td>
-                    <td>
-                      {new Date(item.updatedAt || item.createdAt).toLocaleDateString()}
+                      {new Date(merchant.updatedAt || merchant.createdAt).toLocaleDateString()}
                     </td>
                     <td>
                       <div className={styles.actions}>
                         <Link
-                          href={`/inventory/edit/${item.id}`}
+                          href={`/merchants/edit/${merchant.id}`}
                           className={styles.editBtn}
                         >
                           Edit
                         </Link>
                         <button
-                          onClick={() => handleDelete(item.id, item.name)}
+                          onClick={() => handleDelete(merchant.id, merchant.name)}
                           className={styles.deleteBtn}
                         >
                           Delete

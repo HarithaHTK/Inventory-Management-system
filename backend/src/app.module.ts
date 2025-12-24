@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { MerchantsModule } from './merchants/merchants.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { InventoryModule } from './inventory/inventory.module';
     UsersModule,
     RolesModule,
     InventoryModule,
+    MerchantsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
