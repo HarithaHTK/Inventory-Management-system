@@ -25,6 +25,24 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Features
+
+- 🔐 **Authentication & Authorization** - JWT-based auth with role-based access control
+- 📦 **Inventory Management** - Complete CRUD operations for inventory items
+- 👥 **User Management** - User and role management system
+- 📧 **Email Reporting** - Automated inventory reports sent via SendGrid (NEW!)
+  - Send reports to 1000+ merchants efficiently
+  - Queue-based processing with retry logic
+  - Automated scheduling (weekdays at 9 AM)
+  - Beautiful HTML email templates
+
+## Quick Links
+
+- [Database Setup Guide](./DATABASE_SETUP.md)
+- [Authentication Documentation](./AUTHENTICATION.md)
+- [**Email Reporting Setup**](./SETUP_EMAIL_REPORTING.md) ⭐ NEW!
+- [Email Reporting Full Documentation](./EMAIL_REPORTING.md)
+
 ## Project setup
 
 ```bash
@@ -41,6 +59,19 @@ The application automatically seeds the database with three default roles on sta
 No manual seeding is required. Just start the application and the roles will be created automatically.
 
 For more details, see [DATABASE_SETUP.md](./DATABASE_SETUP.md)
+
+## Email Reporting Setup (NEW!)
+
+To enable inventory email reporting:
+
+1. Install Redis: `choco install redis-64` (Windows) or `brew install redis` (Mac)
+2. Get SendGrid API key from [SendGrid](https://app.sendgrid.com)
+3. Update `.env` with your credentials
+4. Start the application!
+
+**Quick Start:** See [SETUP_EMAIL_REPORTING.md](./SETUP_EMAIL_REPORTING.md)
+
+**Full Documentation:** See [EMAIL_REPORTING.md](./EMAIL_REPORTING.md)
 
 ## Compile and run the project
 

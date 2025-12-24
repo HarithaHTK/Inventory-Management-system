@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { Role } from '../users/entities/role.entity';
 import { User } from '../users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { seedMerchants } from './seeds/merchant.seed';
 
 const defaultRoles: Array<Partial<Role>> = [
   {
@@ -31,6 +32,7 @@ export class DatabaseSeederService implements OnModuleInit {
       console.log('Running automatic database seeding...');
       await this.seedDefaultRoles();
       await this.seedDefaultAdminUser();
+      await seedMerchants(this.dataSource);
       console.log('Database seeding completed successfully');
     } catch (error) {
       console.error('Error during database seeding:', error);
