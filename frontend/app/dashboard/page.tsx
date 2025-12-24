@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getToken, removeToken, isAuthenticated } from '@/lib/auth';
 import styles from './dashboard.module.css';
+import Link from 'next/link';
 
 interface User {
   userId: number;
@@ -38,7 +39,13 @@ export default function DashboardPage() {
   return (
     <div className={styles.container}>
       <nav className={styles.navbar}>
-        <h1 className={styles.appName}>Inventory Management</h1>
+        <div className={styles.navLeft}>
+          <h1 className={styles.appName}>Inventory Management</h1>
+          <div className={styles.navLinks}>
+            <Link href="/dashboard" className={styles.navLink}>Dashboard</Link>
+            <Link href="/users" className={styles.navLink}>Users</Link>
+          </div>
+        </div>
         <button onClick={handleLogout} className={styles.logoutBtn}>
           Logout
         </button>
@@ -52,9 +59,8 @@ export default function DashboardPage() {
           <div className={styles.quickLinks}>
             <h3>Quick Links</h3>
             <ul>
-              <li><a href="/users">View All Users</a></li>
-              <li><a href="/health">System Health</a></li>
-              <li><a href="/profile">My Profile</a></li>
+              <li><Link href="/users">Manage Users</Link></li>
+              <li><Link href="/health">System Health</Link></li>
             </ul>
           </div>
         </div>

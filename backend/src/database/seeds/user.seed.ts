@@ -23,16 +23,17 @@ export async function seedUsers(dataSource: DataSource): Promise<void> {
   }
 
   // Create admin user
-  const hashedPassword = await bcrypt.hash('admin123', 10);
+  const hashedPassword = await bcrypt.hash('admin', 10);
   const adminUser = userRepository.create({
     username: 'admin',
-    email: 'admin@example.com',
+    email: 'admin@admin.com',
     password: hashedPassword,
     role: adminRole,
   });
 
   await userRepository.save(adminUser);
-  console.log('Admin user created successfully');
-  console.log('Username: admin');
-  console.log('Password: admin123');
+  console.log('✓ Default admin user created');
+  console.log('  Username: admin');
+  console.log('  Password: admin');
+  console.log('  Email: admin@admin.com');
 }
