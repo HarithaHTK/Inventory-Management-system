@@ -4,42 +4,69 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { Role } from './entities/role.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Role)
+    private rolesRepository: Repository<Role>,
   ) {}
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
-      select: ['id', 'username', 'email', 'createdAt', 'updatedAt'],
+      relations: { role: true },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+        role: { alias: true, name: true },
+      },
     });
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { username } });
+    return this.usersRepository.findOne({
+      where: { username },
+      relations: { role: true },
+    });
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { email } });
+    return this.usersRepository.findOne({
+      where: { email },
+      relations: { role: true },
+    });
   }
 
   async findById(id: number): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { id } });
+    return this.usersRepository.findOne({
+      where: { id },
+      relations: { role: true },
+    });
   }
 
   async create(
     username: string,
     email: string,
     password: string,
+    roleAlias = 'viewer',
   ): Promise<User> {
+    const role = await this.rolesRepository.findOne({ where: { alias: roleAlias } });
+    if (!role) {
+      throw new NotFoundException(`Role with alias ${roleAlias} not found`);
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = this.usersRepository.create({
       username,
       email,
       password: hashedPassword,
+      role,
     });
     return this.usersRepository.save(user);
   }
@@ -66,7 +93,20 @@ export class UsersService {
       }
     }
 
-    Object.assign(user, updateUserDto);
+    if (updateUserDto.roleAlias) {
+      const role = await this.rolesRepository.findOne({
+        where: { alias: updateUserDto.roleAlias },
+      });
+      if (!role) {
+        throw new NotFoundException(
+          `Role with alias ${updateUserDto.roleAlias} not found`,
+        );
+      }
+      user.role = role;
+    }
+
+    const { roleAlias, ...rest } = updateUserDto;
+    Object.assign(user, rest);
     return this.usersRepository.save(user);
   }
 

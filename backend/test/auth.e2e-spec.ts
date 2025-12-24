@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { DataSource } from 'typeorm';
+import { Role } from '../src/users/entities/role.entity';
 
 describe('Auth (e2e)', () => {
   let app: INestApplication<App>;
@@ -18,6 +19,21 @@ describe('Auth (e2e)', () => {
     await app.init();
 
     dataSource = moduleFixture.get<DataSource>(DataSource);
+
+    // Ensure base roles exist
+    const roleRepo = dataSource.getRepository(Role);
+    const roles = [
+      { alias: 'viewer', name: 'Viewer' },
+      { alias: 'manager', name: 'Manager' },
+      { alias: 'admin', name: 'Administrator' },
+    ];
+    for (const role of roles) {
+      const existing = await roleRepo.findOne({ where: { alias: role.alias } });
+      if (!existing) {
+        const created = roleRepo.create(role);
+        await roleRepo.save(created);
+      }
+    }
   });
 
   afterAll(async () => {
@@ -43,6 +59,7 @@ describe('Auth (e2e)', () => {
       expect(res.body.user).toMatchObject({
         username: 'testuser',
         email: 'test@example.com',
+        roleAlias: 'viewer',
       });
       expect(res.body.user).toHaveProperty('id');
     });
@@ -73,6 +90,7 @@ describe('Auth (e2e)', () => {
       expect(res.body.user).toMatchObject({
         username: 'testuser',
         email: 'test@example.com',
+        roleAlias: 'viewer',
       });
     });
 
