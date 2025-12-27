@@ -76,6 +76,60 @@ describe('MerchantsService', () => {
     });
   });
 
+  describe('findActive', () => {
+    it('should return only active merchants', async () => {
+      const activeMerchants = [
+        {
+          id: 1,
+          name: 'Merchant 1',
+          email: 'merchant1@example.com',
+          phone: '1234567890',
+          address: '123 Main St',
+          isActive: true,
+        },
+        {
+          id: 2,
+          name: 'Merchant 2',
+          email: 'merchant2@example.com',
+          phone: '0987654321',
+          address: '456 Oak Ave',
+          isActive: true,
+        },
+      ];
+      mockRepository.find.mockResolvedValue(activeMerchants);
+
+      const result = await service.findActive();
+      expect(result).toEqual(activeMerchants);
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: { isActive: true },
+        select: expect.any(Object),
+        order: { name: 'ASC' },
+      });
+    });
+
+    it('should return empty array when no active merchants exist', async () => {
+      mockRepository.find.mockResolvedValue([]);
+
+      const result = await service.findActive();
+      expect(result).toEqual([]);
+    });
+
+    it('should order active merchants by name ascending', async () => {
+      const merchants = [
+        { id: 1, name: 'Alpha Merchant', isActive: true },
+        { id: 2, name: 'Beta Merchant', isActive: true },
+      ];
+      mockRepository.find.mockResolvedValue(merchants);
+
+      await service.findActive();
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: { isActive: true },
+        select: expect.any(Object),
+        order: { name: 'ASC' },
+      });
+    });
+  });
+
   describe('findById', () => {
     it('should return a merchant by id', async () => {
       const merchant = {

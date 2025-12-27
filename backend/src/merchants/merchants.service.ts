@@ -30,6 +30,27 @@ export class MerchantsService {
     });
   }
 
+  async findActive(): Promise<Merchant[]> {
+    return this.merchantRepository.find({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        city: true,
+        country: true,
+        zipCode: true,
+        businessLicense: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      order: { name: 'ASC' },
+    });
+  }
+
   async findById(id: number): Promise<Merchant | null> {
     return this.merchantRepository.findOne({
       where: { id },

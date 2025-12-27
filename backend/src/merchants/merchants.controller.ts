@@ -28,6 +28,15 @@ export class MerchantsController {
     };
   }
 
+  @Get('active/list')
+  async getActiveMerchants() {
+    const merchants = await this.merchantsService.findActive();
+    return {
+      message: 'Active merchants retrieved successfully',
+      data: merchants,
+    };
+  }
+
   @Get(':id')
   async getMerchantById(@Param('id') id: string) {
     const merchant = await this.merchantsService.findById(+id);

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { getToken, isAuthenticated, removeToken } from "@/lib/auth";
+import MerchantSelectionModal from "../../../components/MerchantSelectionModal";
 import styles from "./view-report.module.css";
 
 interface InventoryItem {
@@ -35,6 +36,7 @@ export default function ViewReportPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showMerchantModal, setShowMerchantModal] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -88,7 +90,11 @@ export default function ViewReportPage() {
   };
 
   const handleSendEmail = () => {
-    alert("Send Email feature - Coming Soon!");
+    setShowMerchantModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowMerchantModal(false);
   };
 
   if (loading) {
@@ -287,6 +293,15 @@ export default function ViewReportPage() {
           </div>
         </div>
       </main>
+
+      {report && (
+        <MerchantSelectionModal
+          reportId={report.id}
+          reportTitle={report.title}
+          isOpen={showMerchantModal}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }

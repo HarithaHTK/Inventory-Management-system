@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getToken, isAuthenticated, removeToken } from "@/lib/auth";
+import MerchantSelectionModal from "../components/MerchantSelectionModal";
 import styles from "./reports.module.css";
 
 interface InventoryItem {
@@ -29,6 +30,10 @@ export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedReportForSend, setSelectedReportForSend] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -110,8 +115,11 @@ export default function ReportsPage() {
   };
 
   const handleSendToMerchants = (reportId: number, title: string) => {
-    // Dummy function for now
-    alert(`Send to Merchants feature for "${title}" - Coming Soon!`);
+    setSelectedReportForSend({ id: reportId, title });
+  };
+
+  const handleCloseModal = () => {
+    setSelectedReportForSend(null);
   };
 
   if (loading) {
@@ -241,6 +249,15 @@ export default function ReportsPage() {
           </table>
         </div>
       </main>
+
+      {selectedReportForSend && (
+        <MerchantSelectionModal
+          reportId={selectedReportForSend.id}
+          reportTitle={selectedReportForSend.title}
+          isOpen={true}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }
