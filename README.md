@@ -16,6 +16,8 @@ A full-stack application for managing inventory, reports, and merchant communica
 - [System Startup Guide](#system-startup-guide)
 - [Default Credentials](#default-credentials)
 - [API Documentation](#api-documentation)
+- Testing
+
 
 ## Prerequisites
 
